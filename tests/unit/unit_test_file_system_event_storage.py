@@ -88,6 +88,36 @@ class TestFileSystemEventStorage(unittest.TestCase):
         self.assert_stored_at(event, Path(LEAGUE, SEASON_INFORMATION_EVENT_NAME,
                                           f"2024_{self.timestamp(event)}.json"))
 
+    def test_store_same_entity_twice_keeps_both_downloads(self):
+        first = self.build_event(TEAM_INFORMATION_EVENT_NAME, "json", {"team_id": "MAD"})
+        second = self.build_event(TEAM_INFORMATION_EVENT_NAME, "json", {"team_id": "MAD"})
+        second.event_date = first.event_date + 1  # una descarga posterior
+        self.storage.store_event(first)
+        self.storage.store_event(second)
+        team_folder = self.root / LEAGUE / TEAM_INFORMATION_EVENT_NAME
+        self.assertEqual(
+            {f"MAD_{self.timestamp(first)}.json": first.get_event(),
+             f"MAD_{self.timestamp(second)}.json": second.get_event()},
+            {path.name: path.read_text(encoding="utf-8") for path in team_folder.iterdir()})
+
+    def test_store_event_with_unknown_parameter_raises_and_stores_nothing(self):
+        event = self.build_event(TEAM_INFORMATION_EVENT_NAME, "json",
+                                 {"team_id": "MAD", "phase": "RS"})
+        with self.assertRaises(ValueError):
+            self.storage.store_event(event)
+        self.assertEqual([], list(self.root.rglob("*")))
+
+    def test_store_event_with_invalid_segment_raises_and_stores_nothing(self):
+        invalid_values = ["a:b", "../x", "a/b", "a\\b", "CON", "team ", ""]
+        for value in invalid_values:
+            with self.subTest(team_id=value):
+                event = self.build_event(TEAM_INFORMATION_EVENT_NAME, "json",
+                                         {"team_id": value})
+
+                with self.assertRaises(ValueError):
+                    self.storage.store_event(event)
+                self.assertEqual([], list(self.root.rglob("*")))
+
 
 if __name__ == "__main__":
     unittest.main()
