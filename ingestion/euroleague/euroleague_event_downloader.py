@@ -1,6 +1,7 @@
 from euroleague_api.EuroLeagueData import EuroLeagueData
 from euroleague_api.utils import get_requests
 
+from common.config import *
 from common.euroleague.euroleague_event import EuroleagueEvent
 from common.event import EventMetadata
 from ingestion.common.event_downloader import EventDownloader
@@ -17,7 +18,7 @@ class EuroleagueEventDownloader(EventDownloader):
         url = self.__api.make_season_game_url(season, game_code, "stats")
         response = get_requests(url)
         return self.__create_euroleague_event(
-            response.text, "match_stats", "json",
+            response.text, MATCH_STATS_EVENT_NAME, "json",
             {"season": season, "game_code": game_code})
 
     def download_team_players(self, team_id, season) -> EuroleagueEvent:
@@ -25,20 +26,20 @@ class EuroleagueEventDownloader(EventDownloader):
                f"/clubs/{team_id}/people")
         response = get_requests(url)
         return self.__create_euroleague_event(
-            response.text, "team_players", "json",
+            response.text, TEAM_PLAYERS_EVENT_NAME, "json",
             {"season": season, "team_id": team_id})
 
     def download_player_information(self, player_id) -> EuroleagueEvent:
         url = f"{self.__api.BASE_URL}/{self.__api.V2}/people/{player_id}"
         response = get_requests(url)
         return self.__create_euroleague_event(
-            response.text, "player_info", "json", {"player_id": player_id})
+            response.text, PLAYERS_INFORMATION_EVENT_NAME, "json", {"player_id": player_id})
 
     def download_team_information(self, team_id) -> EuroleagueEvent:
         url = f"{self.__api.BASE_URL}/{self.__api.V2}/clubs/{team_id}"
         response = get_requests(url)
         return self.__create_euroleague_event(
-            response.text, "team_info", "json", {"team_id": team_id})
+            response.text, TEAM_INFORMATION_EVENT_NAME, "json", {"team_id": team_id})
 
     def download_league_information(self) -> EuroleagueEvent:
 
@@ -46,14 +47,14 @@ class EuroleagueEventDownloader(EventDownloader):
 
         response = get_requests(self.__api.url_v2)
         return self.__create_euroleague_event(
-            response.text, "league_info", "json", {})
+            response.text, LEAGUE_INFORMATION_EVENT_NAME, "json", {})
 
     def download_season_information(self, season) -> EuroleagueEvent:
         response = get_requests(
             self.__api.url_v1,
             params={"seasonCode": f"{self.__api.competition}{season}"})
         return self.__create_euroleague_event(
-            response.text, "season_info", "xml", {"season": season})
+            response.text, SEASON_INFORMATION_EVENT_NAME, "xml", {"season": season})
 
     def __create_euroleague_event(self, string_event, event_type, data_format,
                                   event_params):
