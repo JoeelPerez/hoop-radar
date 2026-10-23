@@ -14,6 +14,8 @@ class EventMetadata:
 
 class Event(ABC):
 
+    FILE_EXTENSION = ".json"
+
     def __init__(self, event_string, metadata: EventMetadata):
         self.event_string = event_string
         self.metadata = metadata

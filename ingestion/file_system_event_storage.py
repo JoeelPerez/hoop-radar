@@ -22,17 +22,24 @@ class FileSystemEventStorage(EventStorage):
 
     def store_event(self, event: Event):
         self._validate_params(event.get_event_params())
-        param_segments, filename = self._build_path_parts(event.get_event_params(), event.get_event_date())
-        for segment in param_segments:
+        param_segments = self._build_param_segments(event.get_event_params())
+        folders = param_segments[:-1]
+        file_name_base = param_segments[-1] if param_segments else event.get_league_event()
+        file_name = self._file_name(file_name_base, event.get_event_date())
+        destination = self._build_full_path(event, folders, file_name)
+        self._write_file(destination, event)
+
+    def _build_param_segments(self, event_params):
+        keys = [f"{event_params[name]}" for name in self.PARAMETERS_ORDER if name in event_params]
+        for segment in keys:
             self._validate_segment(segment)
-        self._write_file(self._build_full_path(event, param_segments, filename), event)
+        return keys
+
+    def _file_name(self, file_name_base, event_date):
+        return f"{file_name_base}_{int(event_date * 1000)}{self.FILE_EXTENSION}"
 
     def _build_full_path(self, event: Event, param_segments: list[str], filename: str) -> Path:
         return self.root.joinpath(event.get_league_event(), event.get_event_type(), *param_segments, filename)
-
-    def _build_path_parts(self, event_params, event_date):
-        param_segments = [f"{event_params[name]}" for name in self.PARAMETERS_ORDER if name in event_params]
-        return param_segments, f"{int(event_date * 1000)}.json"
 
     def _write_file(self, destination: Path, event: Event):
         destination.parent.mkdir(parents=True, exist_ok=True)
