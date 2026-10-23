@@ -6,11 +6,11 @@ from common.event import Event
 class EventDownloader(ABC):
 
     @abstractmethod
-    def download_stats_of_match(self, team_id, game_code) -> Event:
+    def download_stats_of_match(self, season, team_id, game_code) -> Event:
         pass
 
     @abstractmethod
-    def download_teams_player(self, team_id, season) -> Event:
+    def download_team_players(self, team_id, season) -> Event:
         pass
 
     @abstractmethod

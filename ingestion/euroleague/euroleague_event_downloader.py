@@ -10,18 +10,17 @@ class EuroleagueEventDownloader(EventDownloader):
 
     SOURCE = "euroleague"
 
-    def __init__(self, season: int):
-        self.season = season
+    def __init__(self):
         self.__api = EuroLeagueData("E")
 
-    def download_stats_of_match(self, team_id, game_code) -> EuroleagueEvent:
-        url = self.__api.make_season_game_url(self.season, game_code, "stats")
+    def download_stats_of_match(self, season, team_id, game_code) -> EuroleagueEvent:
+        url = self.__api.make_season_game_url(season, game_code, "stats")
         response = get_requests(url)
         return self.__create_euroleague_event(
             response.text, "match_stats", "json",
-            {"season": self.season, "game_code": game_code})
+            {"season": season, "game_code": game_code})
 
-    def download_teams_player(self, team_id, season) -> EuroleagueEvent:
+    def download_team_players(self, team_id, season) -> EuroleagueEvent:
         url = (f"{self.__api.url_v2}/seasons/{self.__api.competition}{season}"
                f"/clubs/{team_id}/people")
         response = get_requests(url)
