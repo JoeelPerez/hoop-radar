@@ -27,3 +27,12 @@ class Event(ABC):
         return {"metadata": asdict(self.metadata),
                 "event": self.event_string,
                 "date": self.event_date}
+
+    def get_league_event(self):
+        return self.metadata.source_league
+
+    def get_event_params(self):
+        return self.metadata.event_params
+
+    def get_event_type(self):
+        return self.metadata.event_type
