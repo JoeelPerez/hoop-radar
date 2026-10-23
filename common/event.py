@@ -8,7 +8,7 @@ from dataclasses import dataclass, asdict, field
 class EventMetadata:
     source_league: str
     event_type: str
-    file_format: str
+    data_format: str
     event_params: dict = field(default_factory=dict)
 
 
