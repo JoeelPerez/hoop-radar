@@ -36,3 +36,6 @@ class Event(ABC):
 
     def get_event_type(self):
         return self.metadata.event_type
+
+    def get_event_date(self):
+        return self.event_date
