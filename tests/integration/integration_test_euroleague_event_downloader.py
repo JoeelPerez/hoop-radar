@@ -8,6 +8,8 @@ from ingestion.euroleague.euroleague_event_downloader import EuroleagueEventDown
 CLOSED_SEASON = 2023
 
 
+@unittest.skipUnless(os.environ.get("RUN_INTEGRATION") == "1",
+                     "Integration tests call the real API; set RUN_INTEGRATION=1 to run them")
 class TestEuroleagueEventDownloaderIntegration(unittest.TestCase):
 
     def setUp(self):
