@@ -35,12 +35,18 @@ class EuroleagueEventDownloader(EventDownloader):
             response.text, "player_info", "json", {"player_id": player_id})
 
     def download_team_information(self, team_id) -> EuroleagueEvent:
-        raise NotImplementedError(
-            "euroleague-api 0.1.1 no tiene endpoint de información de equipo")
+        url = f"{self.__api.BASE_URL}/{self.__api.V2}/clubs/{team_id}"
+        response = get_requests(url)
+        return self.__create_euroleague_event(
+            response.text, "team_info", "json", {"team_id": team_id})
 
     def download_league_information(self) -> EuroleagueEvent:
-        raise NotImplementedError(
-            "euroleague-api 0.1.1 no tiene endpoint de información de liga")
+
+        # TODO Buscar maneras de cargar información relevante sobre la euroliga
+
+        response = get_requests(self.__api.url_v2)
+        return self.__create_euroleague_event(
+            response.text, "league_info", "json", {})
 
     def download_season_information(self, season) -> EuroleagueEvent:
         response = get_requests(
@@ -55,5 +61,5 @@ class EuroleagueEventDownloader(EventDownloader):
             source_league=self.SOURCE,
             event_type=event_type,
             data_format=data_format,
-            event_params={"league": self.__api.competition, **event_params})
+            event_params={**event_params})
         return EuroleagueEvent(string_event, metadata)
