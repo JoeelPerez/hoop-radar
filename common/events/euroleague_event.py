@@ -1,4 +1,4 @@
-from common.event import Event, EventMetadata
+from common.events.event import Event, EventMetadata
 
 
 class EuroleagueEvent(Event):

@@ -10,9 +10,9 @@ from common.config import (
     TEAM_INFORMATION_EVENT_NAME,
     TEAM_PLAYERS_EVENT_NAME,
 )
-from common.euroleague.euroleague_event import EuroleagueEvent
-from common.event import EventMetadata
-from ingestion.file_system_event_storage import FileSystemEventStorage
+from common.events.euroleague_event import EuroleagueEvent
+from common.events.event import EventMetadata
+from ingestion.storage.file_system_event_storage import FileSystemEventStorage
 
 LEAGUE = "euroleague"
 

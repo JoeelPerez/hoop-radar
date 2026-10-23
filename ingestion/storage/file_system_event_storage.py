@@ -3,8 +3,8 @@ import re
 import tempfile
 from pathlib import Path
 
-from common.event import Event
-from ingestion.event_storage import EventStorage
+from common.events.event import Event
+from ingestion.storage.event_storage import EventStorage
 
 
 class FileSystemEventStorage(EventStorage):

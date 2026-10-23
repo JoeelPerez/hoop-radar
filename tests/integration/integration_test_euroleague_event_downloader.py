@@ -3,7 +3,7 @@ import os
 import unittest
 import xml.etree.ElementTree as ElementTree
 
-from ingestion.euroleague.euroleague_event_downloader import EuroleagueEventDownloader
+from ingestion.downloader.euroleague_event_downloader import EuroleagueEventDownloader
 
 CLOSED_SEASON = 2023
 

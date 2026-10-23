@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from common.event import Event
+from common.events.event import Event
 
 
 class EventDownloader(ABC):

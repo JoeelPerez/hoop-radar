@@ -9,11 +9,11 @@ from common.config import (
     TEAM_INFORMATION_EVENT_NAME,
     TEAM_PLAYERS_EVENT_NAME,
 )
-from common.euroleague.euroleague_event import EuroleagueEvent
-from ingestion.euroleague.euroleague_event_downloader import EuroleagueEventDownloader
+from common.events.euroleague_event import EuroleagueEvent
+from ingestion.downloader.euroleague_event_downloader import EuroleagueEventDownloader
 
 
-GET_REQUESTS = "ingestion.euroleague.euroleague_event_downloader.get_requests"
+GET_REQUESTS = "ingestion.downloader.euroleague_event_downloader.get_requests"
 RESPONSE_TEXT = "raw response body"
 API = "https://api-live.euroleague.net"
 

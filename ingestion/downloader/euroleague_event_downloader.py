@@ -2,9 +2,9 @@ from euroleague_api.EuroLeagueData import EuroLeagueData
 from euroleague_api.utils import get_requests
 
 from common.config import *
-from common.euroleague.euroleague_event import EuroleagueEvent
-from common.event import EventMetadata
-from ingestion.common.event_downloader import EventDownloader
+from common.events.euroleague_event import EuroleagueEvent
+from common.events.event import EventMetadata
+from ingestion.downloader.event_downloader import EventDownloader
 
 
 class EuroleagueEventDownloader(EventDownloader):
