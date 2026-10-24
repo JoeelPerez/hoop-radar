@@ -1,6 +1,5 @@
 import json
 import time
-from abc import ABC
 from dataclasses import dataclass, asdict, field
 
 
@@ -12,7 +11,7 @@ class EventMetadata:
     event_params: dict = field(default_factory=dict)
 
 
-class Event(ABC):
+class Event:
 
     FILE_EXTENSION = ".json"
 
