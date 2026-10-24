@@ -11,6 +11,7 @@ from common.config import (
     TEAM_PLAYERS_EVENT_NAME,
 )
 from common.events.event import Event, EventMetadata
+from common.file_system_event_layout import FileSystemEventLayout
 from ingestion.storage.file_system_event_storage import FileSystemEventStorage
 
 LEAGUE = "euroleague"
@@ -22,7 +23,7 @@ class TestFileSystemEventStorage(unittest.TestCase):
         tmp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(tmp_dir.cleanup)
         self.root = Path(tmp_dir.name).resolve()
-        self.storage = FileSystemEventStorage(self.root)
+        self.storage = FileSystemEventStorage(FileSystemEventLayout(self.root))
 
     def build_event(self, event_type, data_format, event_params):
         metadata = EventMetadata(
@@ -102,7 +103,7 @@ class TestFileSystemEventStorage(unittest.TestCase):
     def test_store_event_with_unknown_parameter_raises_and_stores_nothing(self):
         event = self.build_event(TEAM_INFORMATION_EVENT_NAME, "json",
                                  {"team_id": "MAD", "phase": "RS"})
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, "Parameters without a defined position"):
             self.storage.store_event(event)
         self.assertEqual([], list(self.root.rglob("*")))
 
@@ -113,7 +114,7 @@ class TestFileSystemEventStorage(unittest.TestCase):
                 event = self.build_event(TEAM_INFORMATION_EVENT_NAME, "json",
                                          {"team_id": value})
 
-                with self.assertRaises(ValueError):
+                with self.assertRaisesRegex(ValueError, "Invalid segment"):
                     self.storage.store_event(event)
                 self.assertEqual([], list(self.root.rglob("*")))
 
