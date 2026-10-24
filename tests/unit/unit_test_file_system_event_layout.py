@@ -11,7 +11,7 @@ from common.events.event import Event, EventMetadata
 from common.file_system_event_layout import FileSystemEventLayout
 
 LEAGUE = "euroleague"
-DATE = 1700000000.5  # 1700000000500 ms, exact in binary floating point
+DATE = 1700000000.5
 
 
 class TestFileSystemEventLayout(unittest.TestCase):
@@ -29,8 +29,6 @@ class TestFileSystemEventLayout(unittest.TestCase):
             data_format="json",
             event_params=event_params)
         return Event("raw response body", metadata, event_date=event_date)
-
-    # --- build_event_path ---
 
     def test_build_event_path_uses_all_but_last_parameter_as_folders(self):
         event = self.build_event(TEAM_PLAYERS_EVENT_NAME, {"season": 2024, "team_id": "MAD"})
