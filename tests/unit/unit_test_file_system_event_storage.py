@@ -10,8 +10,7 @@ from common.config import (
     TEAM_INFORMATION_EVENT_NAME,
     TEAM_PLAYERS_EVENT_NAME,
 )
-from common.events.euroleague_event import EuroleagueEvent
-from common.events.event import EventMetadata
+from common.events.event import Event, EventMetadata
 from ingestion.storage.file_system_event_storage import FileSystemEventStorage
 
 LEAGUE = "euroleague"
@@ -31,7 +30,7 @@ class TestFileSystemEventStorage(unittest.TestCase):
             event_type=event_type,
             data_format=data_format,
             event_params=event_params)
-        return EuroleagueEvent("raw response body", metadata)
+        return Event("raw response body", metadata)
 
     def timestamp(self, event):
         return int(event.get_event_date() * 1000)

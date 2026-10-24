@@ -9,7 +9,7 @@ from common.config import (
     TEAM_INFORMATION_EVENT_NAME,
     TEAM_PLAYERS_EVENT_NAME,
 )
-from common.events.euroleague_event import EuroleagueEvent
+from common.events.event import Event
 from ingestion.downloader.euroleague_event_downloader import EuroleagueEventDownloader
 
 
@@ -27,7 +27,7 @@ class TestEuroleagueEventDownloader(unittest.TestCase):
         self.downloader = EuroleagueEventDownloader()
 
     def assert_event(self, event, event_type, data_format, event_params):
-        self.assertIsInstance(event, EuroleagueEvent)
+        self.assertIsInstance(event, Event)
         self.assertEqual(RESPONSE_TEXT, event.event_string)
         self.assertEqual("euroleague", event.metadata.source_league)
         self.assertEqual(event_type, event.metadata.event_type)

@@ -16,10 +16,10 @@ class Event(ABC):
 
     FILE_EXTENSION = ".json"
 
-    def __init__(self, event_string, metadata: EventMetadata):
+    def __init__(self, event_string, metadata: EventMetadata, event_date=None):
         self.event_string = event_string
         self.metadata = metadata
-        self.event_date = time.time()
+        self.event_date = time.time() if event_date is None else event_date
 
     def get_event(self):
         return json.dumps(
