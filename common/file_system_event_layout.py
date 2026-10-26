@@ -13,17 +13,54 @@ class FileSystemEventLayout:
                        *(f"COM{i}" for i in range(1, 10)),
                        *(f"LPT{i}" for i in range(1, 10))}
 
+    _TIMESTAMP_SEPARATOR = "_"
+
     def __init__(self, root):
         self.root = Path(root).resolve()
 
     def build_event_path(self, event: Event):
-        param_segment = self._build_param_segments(event.get_event_params())
-        return (self._build_folders(param_segment, event.get_league_event(), event.get_event_type()) /
-                self._build_file_name(param_segment, event.get_league_event(), event.get_event_date()))
+        param_segments = self._build_param_segments(event.get_event_params())
+        return (self._build_folders(param_segments, event.get_league_event(), event.get_event_type()) /
+                self._build_file_name(param_segments, event.get_league_event(), event.get_event_date()))
+
+    def find_event_files(self, league, event_type, event_params):
+        param_segments = self._build_param_segments(event_params)
+        directory = self._build_folders(param_segments, league, event_type)
+        if not directory.is_dir():
+            return []
+
+        prefix = self._build_file_name_prefix(league, param_segments)
+        return [path for path in directory.iterdir() if self._is_download_of(path.name, prefix)]
+
+    def sort_event_files(self, files: list[Path]):
+        return sorted(files, key=lambda file: self._extract_timestamp(file.name))
 
     def _build_file_name(self, param_segments, league, event_date):
-        file_base = param_segments[-1] if param_segments else league
-        return f"{file_base}_{int(event_date * 1000)}{Event.FILE_EXTENSION}"
+        return f"{self._build_file_name_prefix(league, param_segments)}{int(event_date * 1000)}{Event.FILE_EXTENSION}"
+
+    def _build_file_name_prefix(self, league, param_segments) -> str:
+        return f"{self._build_file_base(league, param_segments)}{self._TIMESTAMP_SEPARATOR}"
+
+    def _is_download_of(self, file_name: str, prefix: str) -> bool:
+        if not (file_name.startswith(prefix) and file_name.endswith(Event.FILE_EXTENSION)):
+            return False
+        return self._has_only_ascii_digits_after_prefix(file_name, prefix)
+
+    def _has_only_ascii_digits_after_prefix(self, file_name: str, prefix: str) -> bool:
+        timestamp = file_name[len(prefix):len(file_name) - len(Event.FILE_EXTENSION)]
+        return self._is_ascii_number(timestamp)
+
+    def _is_ascii_number(self, text: str) -> bool:
+        return text.isascii() and text.isdigit()
+
+    def _extract_timestamp(self, file_name: str) -> int:
+        timestamp = file_name[:len(file_name) - len(Event.FILE_EXTENSION)].rsplit(self._TIMESTAMP_SEPARATOR, 1)[-1]
+        if not (file_name.endswith(Event.FILE_EXTENSION) and self._is_ascii_number(timestamp)):
+            raise ValueError(f"Not an event file name: {file_name!r}")
+        return int(timestamp)
+
+    def _build_file_base(self, league, param_segments) -> str:
+        return param_segments[-1] if param_segments else league
 
     def _build_folders(self, param_segments, league, event_type):
         for segment in param_segments + [league, event_type]:

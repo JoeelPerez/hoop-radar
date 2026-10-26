@@ -30,6 +30,12 @@ class TestFileSystemEventLayout(unittest.TestCase):
             event_params=event_params)
         return Event("raw response body", metadata, event_date=event_date)
 
+    def touch(self, relative_path):
+        path = self.root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("", encoding="utf-8")
+        return path
+
     def test_build_event_path_uses_all_but_last_parameter_as_folders(self):
         event = self.build_event(TEAM_PLAYERS_EVENT_NAME, {"season": 2024, "team_id": "MAD"})
 
@@ -74,6 +80,96 @@ class TestFileSystemEventLayout(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "Invalid segment"):
             self.layout.build_event_path(event)
+
+    def test_find_event_files_returns_every_download_of_the_entity(self):
+        folder = Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME)
+        first = self.touch(folder / "MAD_1700000001000.json")
+        second = self.touch(folder / "MAD_1700000002000.json")
+        third = self.touch(folder / "MAD_1700000003000.json")
+
+        found = self.layout.find_event_files(LEAGUE, TEAM_INFORMATION_EVENT_NAME, {"team_id": "MAD"})
+
+        self.assertCountEqual([first, second, third], found)
+
+    def test_find_event_files_ignores_other_entities_and_temporary_files(self):
+        folder = Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME)
+        wanted = self.touch(folder / "MAD_1700000001000.json")
+        self.touch(folder / "BAR_1700000001000.json")
+        self.touch(folder / "MAD_2_1700000001000.json")
+        self.touch(folder / "MAD_1700000001000.json.tmp")
+        self.touch(folder / "MAD_1700000001000.txt")
+
+        found = self.layout.find_event_files(LEAGUE, TEAM_INFORMATION_EVENT_NAME, {"team_id": "MAD"})
+
+        self.assertEqual([wanted], found)
+
+    def test_sort_event_files_returns_oldest_first(self):
+        folder = Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME)
+        newest = self.touch(folder / "MAD_1700000003000.json")
+        oldest = self.touch(folder / "MAD_1700000001000.json")
+        middle = self.touch(folder / "MAD_1700000002000.json")
+
+        sorted_files = self.layout.sort_event_files([newest, oldest, middle])
+
+        self.assertEqual([oldest, middle, newest], sorted_files)
+
+    def test_sort_event_files_orders_by_timestamp_value_not_by_text(self):
+        folder = Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME)
+        longer = self.touch(folder / "MAD_1000.json")
+        shorter = self.touch(folder / "MAD_999.json")
+
+        sorted_files = self.layout.sort_event_files([longer, shorter])
+
+        self.assertEqual([shorter, longer], sorted_files)
+
+    def test_sort_event_files_handles_file_bases_containing_the_separator(self):
+        folder = Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME)
+        later = self.touch(folder / "REAL_MADRID_1700000002000.json")
+        earlier = self.touch(folder / "REAL_MADRID_1700000001000.json")
+
+        sorted_files = self.layout.sort_event_files([later, earlier])
+
+        self.assertEqual([earlier, later], sorted_files)
+
+    def test_sort_event_files_rejects_files_that_are_not_event_files(self):
+        with self.assertRaisesRegex(ValueError, "Not an event file name"):
+            self.layout.sort_event_files([Path("notes.txt")])
+
+    def test_find_event_files_looks_inside_parameter_folders(self):
+        folder = Path(LEAGUE, TEAM_PLAYERS_EVENT_NAME)
+        wanted = self.touch(folder / "2024" / "MAD_1700000001000.json")
+        self.touch(folder / "2023" / "MAD_1700000001000.json")
+
+        found = self.layout.find_event_files(
+            LEAGUE, TEAM_PLAYERS_EVENT_NAME, {"season": 2024, "team_id": "MAD"})
+
+        self.assertEqual([wanted], found)
+
+    def test_find_event_files_ignores_non_ascii_digits_in_the_timestamp(self):
+        folder = Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME)
+        wanted = self.touch(folder / "MAD_1700000001000.json")
+        self.touch(folder / "MAD_１７０００００００１０００.json")  # fullwidth digits
+
+        found = self.layout.find_event_files(LEAGUE, TEAM_INFORMATION_EVENT_NAME, {"team_id": "MAD"})
+
+        self.assertEqual([wanted], found)
+
+    def test_find_event_files_returns_empty_when_nothing_is_stored(self):
+        found = self.layout.find_event_files(LEAGUE, TEAM_INFORMATION_EVENT_NAME, {"team_id": "MAD"})
+        self.assertEqual([], found)
+
+    def test_find_event_files_rejects_unknown_parameter(self):
+        with self.assertRaisesRegex(ValueError, "Parameters without a defined position"):
+            self.layout.find_event_files(LEAGUE, TEAM_INFORMATION_EVENT_NAME, {"phase": "RS"})
+
+    def test_find_event_files_finds_the_path_built_for_an_event(self):
+        event = self.build_event(TEAM_PLAYERS_EVENT_NAME, {"season": 2024, "team_id": "MAD"})
+        path = self.touch(self.layout.build_event_path(event).relative_to(self.root))
+
+        found = self.layout.find_event_files(
+            event.get_league_event(), event.get_event_type(), event.get_event_params())
+
+        self.assertEqual([path], found)
 
 
 if __name__ == "__main__":
