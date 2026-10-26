@@ -1,7 +1,13 @@
 import re
 from pathlib import Path
+from typing import NamedTuple
 
 from common.events.event import Event
+
+
+class _ParsedFileName(NamedTuple):
+    file_base: str
+    timestamp: int
 
 
 class FileSystemEventLayout:
@@ -29,47 +35,52 @@ class FileSystemEventLayout:
         if not directory.is_dir():
             return []
 
-        prefix = self._build_file_name_prefix(league, param_segments)
-        return [path for path in directory.iterdir() if self._is_download_of(path.name, prefix)]
+        file_base = self._build_file_base(league, param_segments)
+        return [path for path in directory.iterdir() if path.is_file() and self._is_download_of(path.name, file_base)]
 
     def sort_event_files(self, files: list[Path]):
-        return sorted(files, key=lambda file: self._extract_timestamp(file.name))
+        return sorted(files, key=lambda file: self._get_timestamp(file.name))
 
     def _build_file_name(self, param_segments, league, event_date):
-        return f"{self._build_file_name_prefix(league, param_segments)}{int(event_date * 1000)}{Event.FILE_EXTENSION}"
+        file_base = self._build_file_base(league, param_segments)
+        return f"{file_base}{self._TIMESTAMP_SEPARATOR}{int(event_date * 1000)}{Event.FILE_EXTENSION}"
 
-    def _build_file_name_prefix(self, league, param_segments) -> str:
-        return f"{self._build_file_base(league, param_segments)}{self._TIMESTAMP_SEPARATOR}"
+    def _parse_file_name(self, file_name: str):
+        if not file_name.endswith(Event.FILE_EXTENSION):
+            return None
+        name_without_extension = file_name[:len(file_name) - len(Event.FILE_EXTENSION)]
+        file_base, separator, timestamp = name_without_extension.rpartition(self._TIMESTAMP_SEPARATOR)
+        if not (separator and file_base and self._is_ascii_number(timestamp)):
+            return None
+        return _ParsedFileName(file_base, int(timestamp))
 
-    def _is_download_of(self, file_name: str, prefix: str) -> bool:
-        if not (file_name.startswith(prefix) and file_name.endswith(Event.FILE_EXTENSION)):
-            return False
-        return self._has_only_ascii_digits_after_prefix(file_name, prefix)
+    def _is_download_of(self, file_name: str, file_base: str):
+        parsed = self._parse_file_name(file_name)
+        return parsed is not None and parsed.file_base == file_base
 
-    def _has_only_ascii_digits_after_prefix(self, file_name: str, prefix: str) -> bool:
-        timestamp = file_name[len(prefix):len(file_name) - len(Event.FILE_EXTENSION)]
-        return self._is_ascii_number(timestamp)
+    def _get_timestamp(self, file_name: str):
+        parsed = self._parse_file_name(file_name)
+        if parsed is None:
+            raise ValueError(f"Not an event file name: {file_name!r}")
+        return parsed.timestamp
 
-    def _is_ascii_number(self, text: str) -> bool:
+    def _is_ascii_number(self, text: str):
         return text.isascii() and text.isdigit()
 
-    def _extract_timestamp(self, file_name: str) -> int:
-        timestamp = file_name[:len(file_name) - len(Event.FILE_EXTENSION)].rsplit(self._TIMESTAMP_SEPARATOR, 1)[-1]
-        if not (file_name.endswith(Event.FILE_EXTENSION) and self._is_ascii_number(timestamp)):
-            raise ValueError(f"Not an event file name: {file_name!r}")
-        return int(timestamp)
-
-    def _build_file_base(self, league, param_segments) -> str:
+    def _build_file_base(self, league, param_segments):
         return param_segments[-1] if param_segments else league
 
     def _build_folders(self, param_segments, league, event_type):
-        for segment in param_segments + [league, event_type]:
+        for segment in (league, event_type):
             self._validate_segment(segment)
         return self.root.joinpath(league, event_type, *param_segments[:-1])
 
     def _build_param_segments(self, event_params):
         self._validate_params(event_params)
-        return [f"{event_params[name]}" for name in self.PARAMETERS_ORDER if name in event_params]
+        param_segments = [f"{event_params[name]}" for name in self.PARAMETERS_ORDER if name in event_params]
+        for segment in param_segments:
+            self._validate_segment(segment)
+        return param_segments
 
     def _validate_params(self, event_params):
         unknown = set(event_params) - set(self.PARAMETERS_ORDER)

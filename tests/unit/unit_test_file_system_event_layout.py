@@ -75,6 +75,12 @@ class TestFileSystemEventLayout(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "Invalid segment"):
                     self.layout.build_event_path(event)
 
+    def test_build_event_path_rejects_invalid_folder_segment(self):
+        event = self.build_event(TEAM_PLAYERS_EVENT_NAME, {"season": "a:b", "team_id": "MAD"})
+
+        with self.assertRaisesRegex(ValueError, "Invalid segment"):
+            self.layout.build_event_path(event)
+
     def test_build_event_path_rejects_invalid_event_type(self):
         event = self.build_event("../x", {"team_id": "MAD"})
 
@@ -98,6 +104,15 @@ class TestFileSystemEventLayout(unittest.TestCase):
         self.touch(folder / "MAD_2_1700000001000.json")
         self.touch(folder / "MAD_1700000001000.json.tmp")
         self.touch(folder / "MAD_1700000001000.txt")
+
+        found = self.layout.find_event_files(LEAGUE, TEAM_INFORMATION_EVENT_NAME, {"team_id": "MAD"})
+
+        self.assertEqual([wanted], found)
+
+    def test_find_event_files_ignores_directories_named_like_event_files(self):
+        folder = Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME)
+        wanted = self.touch(folder / "MAD_1700000001000.json")
+        (self.root / folder / "MAD_1700000002000.json").mkdir()
 
         found = self.layout.find_event_files(LEAGUE, TEAM_INFORMATION_EVENT_NAME, {"team_id": "MAD"})
 
