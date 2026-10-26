@@ -20,6 +20,34 @@ class Event:
         self.metadata = metadata
         self.event_date = time.time() if event_date is None else event_date
 
+    @classmethod
+    def from_json(cls, text):
+        event_dict = cls.__parse_json_object(text)
+        cls.__require_keys(event_dict, ("metadata", "event", "date"), "event")
+        metadata = cls.__parse_metadata(event_dict["metadata"])
+        return cls(event_dict["event"], metadata, event_dict["date"])
+
+    @staticmethod
+    def __parse_json_object(text):
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Invalid event: not valid JSON ({error}).") from error
+        if not isinstance(parsed, dict):
+            raise ValueError("Invalid event: expected a JSON object.")
+        return parsed
+
+    @staticmethod
+    def __require_keys(values, keys, description):
+        missing = [key for key in keys if key not in values]
+        if missing: raise ValueError(f"Incomplete {description}: missing {missing}.")
+
+    @classmethod
+    def __parse_metadata(cls, metadata):
+        if not isinstance(metadata, dict): raise ValueError("Invalid event: metadata must be a JSON object.")
+        cls.__require_keys(metadata, ("source_league", "event_type", "data_format"), "event metadata")
+        return EventMetadata(**metadata)
+
     def get_event(self):
         return json.dumps(
             self.__cast_event_to_dict())
