@@ -39,11 +39,20 @@ class FileSystemEventLayout:
         return [path for path in directory.iterdir() if path.is_file() and self._is_download_of(path.name, file_base)]
 
     def sort_event_files(self, files: list[Path]):
-        return sorted(files, key=lambda file: self._get_timestamp(file.name))
+        return sorted(files, key=self.get_file_timestamp)
+
+    def get_file_timestamp(self, file: Path):
+        parsed = self._parse_file_name(file.name)
+        if parsed is None:
+            raise ValueError(f"Not an event file name: {file.name!r}")
+        return parsed.timestamp
+
+    def to_timestamp(self, event_date: float):
+        return int(event_date * 1000)
 
     def _build_file_name(self, param_segments, league, event_date):
         file_base = self._build_file_base(league, param_segments)
-        return f"{file_base}{self._TIMESTAMP_SEPARATOR}{int(event_date * 1000)}{Event.FILE_EXTENSION}"
+        return f"{file_base}{self._TIMESTAMP_SEPARATOR}{self.to_timestamp(event_date)}{Event.FILE_EXTENSION}"
 
     def _parse_file_name(self, file_name: str):
         if not file_name.endswith(Event.FILE_EXTENSION):
@@ -57,12 +66,6 @@ class FileSystemEventLayout:
     def _is_download_of(self, file_name: str, file_base: str):
         parsed = self._parse_file_name(file_name)
         return parsed is not None and parsed.file_base == file_base
-
-    def _get_timestamp(self, file_name: str):
-        parsed = self._parse_file_name(file_name)
-        if parsed is None:
-            raise ValueError(f"Not an event file name: {file_name!r}")
-        return parsed.timestamp
 
     def _is_ascii_number(self, text: str):
         return text.isascii() and text.isdigit()

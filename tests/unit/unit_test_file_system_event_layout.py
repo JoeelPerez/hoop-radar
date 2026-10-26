@@ -118,6 +118,25 @@ class TestFileSystemEventLayout(unittest.TestCase):
 
         self.assertEqual([wanted], found)
 
+    def test_to_timestamp_converts_seconds_to_milliseconds(self):
+        self.assertEqual(1700000000500, self.layout.to_timestamp(1700000000.5))
+
+    def test_get_file_timestamp_reads_the_timestamp_in_the_file_name(self):
+        file = self.touch(Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME) / "REAL_MADRID_1700000001000.json")
+
+        self.assertEqual(1700000001000, self.layout.get_file_timestamp(file))
+
+    def test_get_file_timestamp_matches_the_timestamp_used_to_build_the_path(self):
+        event = self.build_event(TEAM_INFORMATION_EVENT_NAME, {"team_id": "MAD"})
+
+        path = self.layout.build_event_path(event)
+
+        self.assertEqual(self.layout.to_timestamp(DATE), self.layout.get_file_timestamp(path))
+
+    def test_get_file_timestamp_rejects_files_that_are_not_event_files(self):
+        with self.assertRaisesRegex(ValueError, "Not an event file name"):
+            self.layout.get_file_timestamp(Path("notes.txt"))
+
     def test_sort_event_files_returns_oldest_first(self):
         folder = Path(LEAGUE, TEAM_INFORMATION_EVENT_NAME)
         newest = self.touch(folder / "MAD_1700000003000.json")
