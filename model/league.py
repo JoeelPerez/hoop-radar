@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class Club:
-    source_league: str
+class League:
     id: str
     name: str

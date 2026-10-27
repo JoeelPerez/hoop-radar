@@ -7,8 +7,8 @@ class Match:
     source_league: str
     id: str
     season_end_year: int
-    home_club_id: str
-    away_club_id: str
+    home_team_id: str
+    away_team_id: str
     played: bool
     competition_phase: str | None = None
     scheduled_at: datetime | None = None
