@@ -53,8 +53,8 @@ class TestEuroleagueEventDownloaderIntegration(unittest.TestCase):
         league = json.loads(event.event_string)
         self.assertEqual("E", league["code"])
 
-    def test_download_season_information(self):
-        event = self.downloader.download_season_information(season=CLOSED_SEASON)
+    def test_download_season_matches(self):
+        event = self.downloader.download_season_matches(season=CLOSED_SEASON)
 
         root = ElementTree.fromstring(event.event_string)
         self.assertEqual("results", root.tag)
