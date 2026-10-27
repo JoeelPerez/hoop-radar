@@ -8,7 +8,10 @@ class StatLine:
     player_id: str
     club_id: str
     minutes_played: float | None = None
+    started: bool | None = None
     points: int | None = None
+    offensive_rebounds: int | None = None
+    defensive_rebounds: int | None = None
     rebounds: int | None = None
     assists: int | None = None
     steals: int | None = None

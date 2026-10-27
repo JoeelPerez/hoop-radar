@@ -6,7 +6,7 @@ from datetime import datetime
 class Match:
     source_league: str
     id: str
-    season_year: int
+    season_end_year: int
     home_club_id: str
     away_club_id: str
     played: bool
