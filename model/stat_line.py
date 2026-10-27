@@ -6,7 +6,7 @@ class StatLine:
     source_league: str
     match_id: str
     player_id: str
-    club_id: str
+    team_id: str
     minutes_played: float | None = None
     started: bool | None = None
     points: int | None = None
