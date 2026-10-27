@@ -43,9 +43,9 @@ class TestEuroleagueEventDownloaderIntegration(unittest.TestCase):
     def test_download_team_information(self):
         event = self.downloader.download_team_information(team_id="MAD")
 
-        club = json.loads(event.event_string)
-        self.assertEqual("MAD", club["code"])
-        self.assertIn("name", club)
+        team = json.loads(event.event_string)
+        self.assertEqual("MAD", team["code"])
+        self.assertIn("name", team)
 
     def test_download_league_information(self):
         event = self.downloader.download_league_information()
