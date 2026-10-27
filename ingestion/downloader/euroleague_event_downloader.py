@@ -41,21 +41,18 @@ class EuroleagueEventDownloader(EventDownloader):
             response.text, TEAM_INFORMATION_EVENT_NAME, "json", {"team_id": team_id})
 
     def download_league_information(self) -> Event:
-
-        # TODO Buscar maneras de cargar información relevante sobre la euroliga
-
         response = get_requests(self.__api.url_v2)
         return self.__create_euroleague_event(
             response.text, LEAGUE_INFORMATION_EVENT_NAME, "json", {})
 
-    def download_season_information(self, season) -> Event:
+    def download_season_matches(self, season) -> Event:
         response = get_requests(
             self.__api.url_v1,
             params={"seasonCode": f"{self.__api.competition}{season}"})
         return self.__create_euroleague_event(
             response.text, SEASON_MATCHES_EVENT_NAME, "xml", {"season": season})
 
-    def download_season_information(self, season) -> EuroleagueEvent:
+    def download_season_information(self, season) -> Event:
 
         # TODO Find the source of the information of a season (name, dates...), which is not in the matches list
 
