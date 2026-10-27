@@ -5,7 +5,7 @@ from common.config import (
     LEAGUE_INFORMATION_EVENT_NAME,
     MATCH_STATS_EVENT_NAME,
     PLAYERS_INFORMATION_EVENT_NAME,
-    SEASON_INFORMATION_EVENT_NAME,
+    SEASON_MATCHES_EVENT_NAME,
     TEAM_INFORMATION_EVENT_NAME,
     TEAM_PLAYERS_EVENT_NAME,
 )
@@ -76,13 +76,19 @@ class TestEuroleagueEventDownloader(unittest.TestCase):
             f"{API}/v2/competitions/E")
         self.assert_event(event, LEAGUE_INFORMATION_EVENT_NAME, "json", {})
 
-    def test_download_season_information(self):
-        event = self.downloader.download_season_information(season=2024)
+    def test_download_season_matches(self):
+        event = self.downloader.download_season_matches(season=2024)
 
         self.get_requests.assert_called_once_with(
             f"{API}/v1/results/", params={"seasonCode": "E2024"})
-        self.assert_event(event, SEASON_INFORMATION_EVENT_NAME, "xml",
+        self.assert_event(event, SEASON_MATCHES_EVENT_NAME, "xml",
                           {"season": 2024})
+
+    def test_download_season_information_is_not_implemented_yet(self):
+        with self.assertRaisesRegex(NotImplementedError, "season information is not defined"):
+            self.downloader.download_season_information(season=2024)
+
+        self.get_requests.assert_not_called()
 
 
 if __name__ == "__main__":

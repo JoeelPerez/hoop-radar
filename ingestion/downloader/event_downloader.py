@@ -26,5 +26,9 @@ class EventDownloader(ABC):
         pass
 
     @abstractmethod
+    def download_season_matches(self, season) -> Event:
+        pass
+
+    @abstractmethod
     def download_season_information(self, season) -> Event:
         pass

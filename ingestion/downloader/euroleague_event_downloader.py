@@ -53,7 +53,13 @@ class EuroleagueEventDownloader(EventDownloader):
             self.__api.url_v1,
             params={"seasonCode": f"{self.__api.competition}{season}"})
         return self.__create_euroleague_event(
-            response.text, SEASON_INFORMATION_EVENT_NAME, "xml", {"season": season})
+            response.text, SEASON_MATCHES_EVENT_NAME, "xml", {"season": season})
+
+    def download_season_information(self, season) -> EuroleagueEvent:
+
+        # TODO Find the source of the information of a season (name, dates...), which is not in the matches list
+
+        raise NotImplementedError("The source of the season information is not defined yet.")
 
     def __create_euroleague_event(self, string_event, event_type, data_format,
                                   event_params):

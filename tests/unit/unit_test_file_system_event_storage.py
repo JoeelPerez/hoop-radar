@@ -6,7 +6,7 @@ from common.config import (
     LEAGUE_INFORMATION_EVENT_NAME,
     MATCH_STATS_EVENT_NAME,
     PLAYERS_INFORMATION_EVENT_NAME,
-    SEASON_INFORMATION_EVENT_NAME,
+    SEASON_MATCHES_EVENT_NAME,
     TEAM_INFORMATION_EVENT_NAME,
     TEAM_PLAYERS_EVENT_NAME,
 )
@@ -80,12 +80,12 @@ class TestFileSystemEventStorage(unittest.TestCase):
         self.assert_stored_at(event, Path(LEAGUE, LEAGUE_INFORMATION_EVENT_NAME,
                                           f"{LEAGUE}_{self.timestamp(event)}.json"))
 
-    def test_store_season_information_event(self):
-        event = self.build_event(SEASON_INFORMATION_EVENT_NAME, "xml",
+    def test_store_season_matches_event(self):
+        event = self.build_event(SEASON_MATCHES_EVENT_NAME, "xml",
                                  {"season": 2024})
 
         self.storage.store_event(event)
-        self.assert_stored_at(event, Path(LEAGUE, SEASON_INFORMATION_EVENT_NAME,
+        self.assert_stored_at(event, Path(LEAGUE, SEASON_MATCHES_EVENT_NAME,
                                           f"2024_{self.timestamp(event)}.json"))
 
     def test_store_same_entity_twice_keeps_both_downloads(self):
