@@ -8,7 +8,7 @@ from ingestion.downloader.event_downloader import EventDownloader
 
 class EuroleagueEventDownloader(EventDownloader):
 
-    SOURCE = "euroleague"
+    SOURCE = EUROLEAGUE_SOURCE_IDENTIFIER
 
     def __init__(self):
         self.__api = EuroLeagueData("E")
