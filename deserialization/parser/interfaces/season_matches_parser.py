@@ -6,7 +6,7 @@ from deserialization.parser.interfaces.event_parser import EventParser
 from model.match import Match
 
 
-class SeasonMatchParser(EventParser, ABC):
+class SeasonMatchesParser(EventParser, ABC):
 
     event_type = SEASON_MATCHES_EVENT_NAME
 

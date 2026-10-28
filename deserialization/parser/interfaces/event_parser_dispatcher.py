@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 from common.events.event import Event
 from deserialization.parser.interfaces.event_parser import EventParser
-from deserialization.parser.erros.league_mismatch import LeagueMismatch
-from deserialization.parser.erros.parser_not_found import ParserNotFound
+from deserialization.parser.error.league_mismatch import LeagueMismatch
+from deserialization.parser.error.parser_not_found import ParserNotFound
 
 
 class EventParserDispatcher(ABC):

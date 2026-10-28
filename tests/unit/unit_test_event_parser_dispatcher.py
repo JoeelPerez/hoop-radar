@@ -9,9 +9,9 @@ from common.events.event import Event, EventMetadata
 from deserialization.parser.euroleague.euroleague_event_parser_dispatcher import EuroleagueEventParserDispatcher
 from deserialization.parser.interfaces.event_parser import EventParser
 from deserialization.parser.interfaces.event_parser_dispatcher import EventParserDispatcher
-from deserialization.parser.interfaces.season_match_parser import SeasonMatchParser
-from deserialization.parser.erros.league_mismatch import LeagueMismatch
-from deserialization.parser.erros.parser_not_found import ParserNotFound
+from deserialization.parser.interfaces.season_matches_parser import SeasonMatchesParser
+from deserialization.parser.error.league_mismatch import LeagueMismatch
+from deserialization.parser.error.parser_not_found import ParserNotFound
 
 
 class RecordingParser(EventParser):
@@ -139,7 +139,7 @@ class TestEuroleagueEventParserDispatcher(unittest.TestCase):
         self.assertEqual(EUROLEAGUE_SOURCE_IDENTIFIER, self.dispatcher.league)
 
     def test_has_a_season_matches_parser_registered(self):
-        self.assertIsInstance(self.dispatcher.event_dict[SEASON_MATCHES_EVENT_NAME], SeasonMatchParser)
+        self.assertIsInstance(self.dispatcher.event_dict[SEASON_MATCHES_EVENT_NAME], SeasonMatchesParser)
 
     def test_every_registered_parser_is_indexed_by_its_own_event_type(self):
         for event_type, parser in self.dispatcher.event_dict.items():
